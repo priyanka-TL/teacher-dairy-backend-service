@@ -1,0 +1,18 @@
+{
+	"routes": [
+		// {
+		// 	"sourceRoute": "/user/v1/account/login",
+		// 	"type": "POST",
+		// 	"priority": "MUST_HAVE",
+		// 	"inSequence": false,
+		// 	"orchestrated": false,
+		// 	"targetPackages": [
+		// 		{
+		// 			"basePackageName": "user",
+		// 			"packageName": "elevate-user"
+		// 		}
+		// 	]
+		// }
+		
+	]
+}
