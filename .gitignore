@@ -1,0 +1,30 @@
+# Root-level ignores
+node_modules/
+*.log
+*.tmp
+*.temp
+*.gz
+*.bak
+*.backup
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Backend-specific ignores
+node_modules
+.env
+*.log
+tmp/
+coverage/
+dist/
+build/
+
+# Common environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
