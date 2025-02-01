@@ -20,5 +20,6 @@
   "CLASS_NOT_FOUND": "Class not found",
   "CLASS_NOT_UPDATED": "Failed to update class",
   "CLASS_UPDATED_SUCCESSFULLY": "Class updated successfully",
-  "CLASS_FETCHED_SUCCESSFULLY": "Class fetched successfully"
+  "CLASS_FETCHED_SUCCESSFULLY": "Class fetched successfully",
+  "TEACHER_LIST_FETCHED_SUCCESSFULLY": "Teachers list fetched successfully."
 }

@@ -82,6 +82,7 @@
     "@middlewares": "middlewares",
     "@public": "public",
     "@routes": "routes",
+    "@requests": "requests",
     "@services": "services",
     "@validators": "validators",
     "@database": "database",
