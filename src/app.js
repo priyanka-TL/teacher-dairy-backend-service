@@ -33,7 +33,7 @@ if (!environmentData.success) {
   process.exit();
 }
 
-require("./configs");
+require("@configs");
 
 i18next
   .use(Backend)

@@ -5,8 +5,8 @@
  * Description : Pagination
  */
 
-const httpStatus = require("../generics/http-status");
-const responses = require("../helpers/responses");
+const httpStatus = require("@generics/http-status");
+const responses = require("@helpers/responses");
 function containsSpecialChars(str) {
   const specialChars = /[`!#$%^&*()_+\-=\[\]{};':"\\|<>\/?~]/;
   return specialChars.test(str);

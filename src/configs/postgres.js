@@ -1,5 +1,4 @@
 require("dotenv").config();
-const path = require("path");
 
 module.exports = {
   development: {
@@ -19,7 +18,6 @@ module.exports = {
       deletedAt: "deleted_at",
     },
     defaultOrgId: parseInt(process.env.DEFAULT_ORG_ID),
-    migrationStoragePath: path.join(__dirname, "../database/migrations"),
   },
   test: {
     url: process.env.TEST_DATABASE_URL,

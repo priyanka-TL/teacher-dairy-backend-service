@@ -24,6 +24,49 @@ module.exports = {
   up: async (queryInterface, Sequelize) => {
     try {
       const rolePermissionsData = [
+        //class permission
+        {
+          role_title: common.ADMIN_ROLE,
+          permission_id: await getPermissionId(
+            "classes",
+            ["POST", "DELETE", "GET", "PUT", "PATCH"],
+            "/ptd/v1/classes/*"
+          ),
+          module: "classes",
+          request_type: ["POST", "DELETE", "GET", "PUT", "PATCH"],
+          api_path: "/ptd/v1/classes/*",
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_by: 0,
+        },
+        {
+          role_title: common.ORG_ADMIN_ROLE,
+          permission_id: await getPermissionId(
+            "classes",
+            ["POST", "DELETE", "GET", "PUT", "PATCH"],
+            "/ptd/v1/classes/*"
+          ),
+          module: "classes",
+          request_type: ["POST", "DELETE", "GET", "PUT", "PATCH"],
+          api_path: "/ptd/v1/classes/*",
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_by: 0,
+        },
+        {
+          role_title: common.TEACHER_ROLE,
+          permission_id: await getPermissionId(
+            "classes",
+            ["GET"],
+            "/ptd/v1/classes/list/*"
+          ),
+          module: "classes",
+          request_type: ["GET"],
+          api_path: "/ptd/v1/classes/list/*",
+          created_at: new Date(),
+          updated_at: new Date(),
+          created_by: 0,
+        },
         //posts permissions
         {
           role_title: common.ADMIN_ROLE,
@@ -95,7 +138,7 @@ module.exports = {
           updated_at: new Date(),
           created_by: 0,
         },
-		{
+        {
           role_title: common.PARENT_ROLE,
           permission_id: await getPermissionId(
             "posts",
@@ -109,7 +152,7 @@ module.exports = {
           updated_at: new Date(),
           created_by: 0,
         },
-		{
+        {
           role_title: common.STUDENT_ROLE,
           permission_id: await getPermissionId(
             "posts",
@@ -397,7 +440,7 @@ module.exports = {
           updated_at: new Date(),
           created_by: 0,
         },
-        {details
+        {
           role_title: common.PARENT_ROLE,
           permission_id: await getPermissionId(
             "permissions",
@@ -512,7 +555,7 @@ module.exports = {
           created_at: new Date(),
           updated_at: new Date(),
           created_by: 0,
-        }
+        },
       ];
       await queryInterface.bulkInsert(
         "role_permission_mapping",

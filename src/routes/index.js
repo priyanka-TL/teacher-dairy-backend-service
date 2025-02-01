@@ -1,13 +1,13 @@
 /**
  * name : routes
- * author : Aman Kumar Gupta
- * Date : 30-Sep-2021
+ * author : Priyanka Pradeep
+ * Date : 30-Jan-2025
  * Description : Routes for available service
  */
 
-const validator = require("../middlewares/validator");
-const authenticator = require("../middlewares/authenticator");
-const pagination = require("../middlewares/pagination");
+const validator = require("@middlewares/validator");
+const authenticator = require("@middlewares/authenticator");
+const pagination = require("@middlewares/pagination");
 const expressValidator = require("express-validator");
 const fs = require("fs");
 const { elevateLog, correlationId } = require("elevate-logger");
@@ -66,6 +66,7 @@ module.exports = (app) => {
       };
     }
   }
+
   async function router(req, res, next) {
     let controllerResponse;
     let validationError;
@@ -76,6 +77,12 @@ module.exports = (app) => {
       ? (req.params.file.match(/^[a-zA-Z0-9_-]+$/) || [])[0]
       : null; // Same validation as controller, or null if file is not provided
     const method = (req.params.method.match(/^[a-zA-Z0-9]+$/) || [])[0]; // Allow only alphanumeric characters
+
+    console.log("Version:", version);
+    console.log("Controller:", controllerName);
+    console.log("File:", file);
+    console.log("Method:", method);
+
     try {
       if (
         !version ||
@@ -90,6 +97,7 @@ module.exports = (app) => {
       }
 
       const directoryPath = path.resolve(__dirname, "..", "controllers");
+      console.log("Directory Path:", directoryPath);
 
       const { allowedControllers, allowedVersions } =
         await getAllowedControllers(directoryPath);
@@ -131,6 +139,7 @@ module.exports = (app) => {
 
     try {
       let controller;
+      console.log("Request Params File:", req.params.file);
       if (req.params.file) {
         let folderExists = fs.existsSync(
           PROJECT_ROOT_DIRECTORY +
@@ -150,6 +159,7 @@ module.exports = (app) => {
       } else {
         controller = require(`@controllers/${version}/${controllerName}`);
       }
+      console.log("Controller:", controller);
       controllerResponse = new controller()[method]
         ? await new controller()[method](req)
         : next();
@@ -167,6 +177,8 @@ module.exports = (app) => {
       /* If error obtained then global error handler gets executed */
       return next(controllerResponse);
     }
+
+    console.log("Controller Response:", controllerResponse);
     if (controllerResponse) {
       res.status(controllerResponse.statusCode).json({
         responseCode: controllerResponse.responseCode,
@@ -180,22 +192,41 @@ module.exports = (app) => {
   app.all(
     process.env.APPLICATION_BASE_URL + "/:version/:controller/:method",
     validator,
+    (req, res, next) => {
+      console.log("Route matched: /:version/:controller/:method");
+      next();
+    },
     router
   );
+
   app.all(
     process.env.APPLICATION_BASE_URL + "/:version/:controller/:file/:method",
     validator,
+    (req, res, next) => {
+      console.log("Route matched: /:version/:controller/:file/:method");
+      next();
+    },
     router
   );
+
   app.all(
     process.env.APPLICATION_BASE_URL + "/:version/:controller/:method/:id",
     validator,
+    (req, res, next) => {
+      console.log("Route matched: /:version/:controller/:method/:id");
+      next();
+    },
     router
   );
+
   app.all(
     process.env.APPLICATION_BASE_URL +
       "/:version/:controller/:file/:method/:id",
     validator,
+    (req, res, next) => {
+      console.log("Route matched: /:version/:controller/:file/:method/:id");
+      next();
+    },
     router
   );
 

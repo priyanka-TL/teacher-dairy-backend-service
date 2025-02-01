@@ -6,12 +6,12 @@
  */
 
 const jwt = require("jsonwebtoken");
-const httpStatusCode = require("../generics/http-status");
-const common = require("../constants/common");
-const requests = require("../generics/requests");
-const endpoints = require("../constants/endpoints");
-const rolePermissionMappingQueries = require("../database/queries/role-permission-mapping");
-const responses = require("../helpers/responses");
+const httpStatusCode = require("@generics/http-status");
+const common = require("@constants/common");
+const requests = require("@generics/requests");
+const endpoints = require("@constants/endpoints");
+const rolePermissionMappingQueries = require("@database/queries/role-permission-mapping");
+const responses = require("@helpers/responses");
 const { Op } = require("sequelize");
 
 async function checkPermissions(roleTitle, requestPath, requestMethod) {
@@ -149,6 +149,7 @@ module.exports = async function (req, res, next) {
         endpoints.USER_PROFILE_DETAILS +
         "/" +
         decodedToken.data.id;
+
       const user = await requests.get(profileUrl, null, true);
       if (!user || !user.success) {
         throw responses.failureResponse({

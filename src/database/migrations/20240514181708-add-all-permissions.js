@@ -7,6 +7,25 @@ module.exports = {
 
     try {
       const permissionsData = [
+        //class
+        {
+          code: "classes_permissions",
+          module: "classes",
+          request_type: ["POST", "DELETE", "GET", "PUT", "PATCH"],
+          api_path: "/ptd/v1/classes/*",
+          status: "ACTIVE",
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
+        {
+          code: "read_classes_permissions",
+          module: "classes",
+          request_type: ["GET"],
+          api_path: "/ptd/v1/classes/list",
+          status: "ACTIVE",
+          created_at: new Date(),
+          updated_at: new Date(),
+        },
         {
           code: "entity_type_permissions",
           module: "entity-types",
