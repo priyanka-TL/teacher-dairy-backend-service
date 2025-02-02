@@ -23,6 +23,14 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.STRING,
       },
+      created_by: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      updated_by: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       created_at: {
         allowNull: false,
         type: Sequelize.DATE,

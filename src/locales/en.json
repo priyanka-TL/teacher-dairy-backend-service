@@ -21,5 +21,7 @@
   "CLASS_NOT_UPDATED": "Failed to update class",
   "CLASS_UPDATED_SUCCESSFULLY": "Class updated successfully",
   "CLASS_FETCHED_SUCCESSFULLY": "Class fetched successfully",
-  "TEACHER_LIST_FETCHED_SUCCESSFULLY": "Teachers list fetched successfully."
+  "TEACHER_LIST_FETCHED_SUCCESSFULLY": "Teachers list fetched successfully.",
+  "TEACHER_ALREADY_MAPPED_TO_CLASS": "Teacher already mapped to class",
+  "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY": "Teacher mapped to class successfully"
 }

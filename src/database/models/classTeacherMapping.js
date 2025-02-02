@@ -23,6 +23,14 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         primaryKey: true,
       },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      updated_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
     },
     {
       sequelize,

@@ -2,7 +2,6 @@
 const httpStatusCode = require("@generics/http-status");
 const common = require("@constants/common");
 const classesQueries = require("@database/queries/classes");
-const permissionsQueries = require("@database/queries/permissions");
 const {
   UniqueConstraintError,
   ForeignKeyConstraintError,
