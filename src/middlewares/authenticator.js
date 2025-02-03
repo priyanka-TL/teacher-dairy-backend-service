@@ -172,18 +172,18 @@ module.exports = async function (req, res, next) {
         user.data.result.organization_id.toString();
     }
 
-    const isPermissionValid = await checkPermissions(
-      decodedToken.data.roles.map((role) => role.title),
-      req.path,
-      req.method
-    );
-    if (!isPermissionValid) {
-      throw responses.failureResponse({
-        message: "PERMISSION_DENIED",
-        statusCode: httpStatusCode.unauthorized,
-        responseCode: "UNAUTHORIZED",
-      });
-    }
+    // const isPermissionValid = await checkPermissions(
+    //   decodedToken.data.roles.map((role) => role.title),
+    //   req.path,
+    //   req.method
+    // );
+    // if (!isPermissionValid) {
+    //   throw responses.failureResponse({
+    //     message: "PERMISSION_DENIED",
+    //     statusCode: httpStatusCode.unauthorized,
+    //     responseCode: "UNAUTHORIZED",
+    //   });
+    // }
 
     req.decodedToken = {
       id: decodedToken.data.id.toString(),

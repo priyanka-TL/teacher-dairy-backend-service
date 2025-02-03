@@ -5,6 +5,7 @@ const ClassTeacherMappingQueries = require("@database/queries/class-teacher-mapp
 const responses = require("@helpers/responses");
 const userRequests = require("@requests/user");
 const classesQueries = require("@database/queries/classes");
+const { Op } = require("sequelize");
 
 module.exports = class TeachersHelper {
   /**
@@ -22,62 +23,126 @@ module.exports = class TeachersHelper {
         count: 0,
       };
 
-      let teachers = await userRequests.list(
-        common.TEACHER_ROLE,
-        pageNo,
-        limit,
-        "",
-        organization_id
-      );
-
-      if (!teachers.success) {
-        return responses.successResponse({
-          statusCode: httpStatusCode.ok,
-          message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
-          result,
-        });
-      }
-
-      if (
-        !teachers.data.result.data ||
-        !Array.isArray(teachers.data.result.data) ||
-        teachers.data.result.data.length === 0
-      ) {
-        return responses.successResponse({
-          statusCode: httpStatusCode.ok,
-          message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
-          result: {
-            data: [],
-            count: 0,
-          },
-        });
-      }
-
       let userList = [];
 
-      // If classId is provided, filter teachers mapped to that class
       if (classId) {
-        // Fetch the list of teachers already mapped to the class
-        const mappedTeachers = await ClassTeacherMappingQueries.findAll(
+        // If classId is provided, fetch teachers mapped to that class
+        let classMappings = await ClassTeacherMappingQueries.findAll(
           {
-            class_id: parseInt(classId),
+            class_id: classId,
             organization_id: organization_id,
           },
           { attributes: ["teacher_id"] }
         );
 
-        // Extract teacher IDs from the mapping
-        const mappedTeacherIds = mappedTeachers.map((mapping) =>
+        // Extract teacher IDs
+        const mappedTeacherIds = classMappings.map((mapping) =>
           mapping.teacher_id.toString()
         );
 
-        // Filter the teachers list to exclude already mapped teachers
-        userList = teachers.data.result.data.filter(
-          (teacher) => !mappedTeacherIds.includes(teacher.id.toString())
+        if (mappedTeacherIds.length === 0) {
+          return responses.successResponse({
+            statusCode: httpStatusCode.ok,
+            message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
+            result,
+          });
+        }
+
+        // Fetch teachers mapped to the given classId
+        let teachers = await userRequests.list(
+          common.TEACHER_ROLE,
+          pageNo,
+          limit,
+          search,
+          organization_id
+        );
+
+        if (!teachers.success) {
+          return responses.successResponse({
+            statusCode: httpStatusCode.ok,
+            message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
+            result,
+          });
+        }
+
+        // Filter teachers to include only those mapped to the classId
+        userList = teachers.data.result.data.filter((teacher) =>
+          mappedTeacherIds.includes(teacher.id.toString())
         );
       } else {
-        // If no classId is provided, return all teachers
+        // If no classId is provided, fetch all teachers
+        let teachers = await userRequests.list(
+          common.TEACHER_ROLE,
+          pageNo,
+          limit,
+          search,
+          organization_id
+        );
+
+        if (!teachers.success) {
+          return responses.successResponse({
+            statusCode: httpStatusCode.ok,
+            message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
+            result,
+          });
+        }
+
         userList = teachers.data.result.data;
+
+        // Extract all teacher IDs
+        const teacherIds = userList.map((teacher) => teacher.id.toString());
+
+        if (teacherIds.length > 0) {
+          // Fetch all class-teacher mappings for these teachers
+          let classMappings = await ClassTeacherMappingQueries.findAll(
+            {
+              teacher_id: {
+                [Op.in]: teacherIds,
+              },
+              organization_id: organization_id,
+            },
+            { attributes: ["teacher_id", "class_id"] }
+          );
+
+          // Fetch class details for mapped class IDs
+          const classIds = [...new Set(classMappings.map((c) => c.class_id))];
+          let classDetails = [];
+
+          if (classIds.length > 0) {
+            classDetails =
+              (await classesQueries.findAll(
+                {
+                  id: { [Op.in]: classIds },
+                  organization_id: organization_id,
+                },
+                { attributes: ["id", "name"] }
+              )) || [];
+          }
+
+          // Create a map of class details
+          const classMap = classDetails.reduce((map, cls) => {
+            map[cls.id] = cls.name;
+            return map;
+          }, {});
+
+          // Create a mapping of teacher -> class array
+          const teacherClassMap = classMappings.reduce((map, mapping) => {
+            if (!map[mapping.teacher_id]) {
+              map[mapping.teacher_id] = [];
+            }
+            map[mapping.teacher_id].push({
+              id: mapping.class_id,
+              name: classMap[mapping.class_id] || "Unknown",
+            });
+            return map;
+          }, {});
+
+          // Assign classes to each teacher
+          userList = userList.map((teacher) => ({
+            ...teacher,
+            classes: teacherClassMap[teacher.id.toString()] || [],
+          }));
+        }
       }
 
       return responses.successResponse({
@@ -87,67 +152,6 @@ module.exports = class TeachersHelper {
           data: userList,
           count: userList.length,
         },
-      });
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  /**
-   * Map a teacher to a class.
-   * @method
-   * @name mapTeacherToClass
-   * @param {Object} bodyData - Mapping data.
-   * @param {String} userId - ID of the user performing the action.
-   * @param {String} orgId - Organization ID.
-   * @returns {JSON} - Mapping response.
-   */
-  static async mapTeacherToClass(teacherId, classId, userId, orgId) {
-    try {
-      const classDetail = await classesQueries.findOne({
-        id: classId,
-        organization_id: orgId,
-      });
-
-      if (!classDetail?.id) {
-        return responses.failureResponse({
-          message: "CLASS_NOT_FOUND",
-          statusCode: httpStatusCode.bad_request,
-          responseCode: "CLIENT_ERROR",
-        });
-      }
-
-      // Check if the mapping already exists
-      const existingMapping = await ClassTeacherMappingQueries.findOne({
-        class_id: classId,
-        teacher_id: teacherId,
-        organization_id: orgId,
-      });
-
-      if (existingMapping?.id) {
-        return responses.failureResponse({
-          message: "TEACHER_ALREADY_MAPPED_TO_CLASS",
-          statusCode: httpStatusCode.bad_request,
-          responseCode: "CLIENT_ERROR",
-        });
-      }
-
-      // Create the mapping
-      const mappingData = {
-        class_id: classId,
-        teacher_id: teacherId,
-        organization_id: orgId,
-        created_by: userId,
-      };
-
-      const createdMapping = await ClassTeacherMappingQueries.create(
-        mappingData
-      );
-
-      return responses.successResponse({
-        statusCode: httpStatusCode.created,
-        message: "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY",
-        result: createdMapping,
       });
     } catch (error) {
       throw error;

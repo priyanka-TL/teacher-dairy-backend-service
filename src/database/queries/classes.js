@@ -16,6 +16,7 @@ module.exports = class ClassData {
         where: filter,
         attributes,
         options,
+        raw: true,
       });
     } catch (error) {
       throw error;
@@ -23,6 +24,19 @@ module.exports = class ClassData {
   }
 
   static async findAll(filter, attributes, options) {
+    try {
+      return await Class.findAll({
+        where: filter,
+        attributes,
+        options,
+        raw: true,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findAndCountAll(filter, attributes, options) {
     try {
       return await Class.findAndCountAll({
         where: filter,

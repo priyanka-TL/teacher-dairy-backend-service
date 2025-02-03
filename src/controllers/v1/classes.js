@@ -1,5 +1,4 @@
 const classesService = require("@services/classes");
-
 module.exports = class Classes {
   /**
    * create class
@@ -62,6 +61,31 @@ module.exports = class Classes {
         req.searchText
       );
       return classList;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  /**
+   * Map a teacher to a class
+   * @method
+   * @name mapTeacher
+   * @param {Object} req - The request object.
+   * @param {String} req.params.id -  The ID of the class
+   * @param {String} req.query.teacher_id - The ID of the teacher to map.
+   * @returns {JSON} - Response indicating success or failure.
+   */
+
+  async mapTeacher(req) {
+    try {
+      const result = await classesService.mapTeacherToClass(
+        req.params.id,
+        req.query.teacher_id,
+        req.decodedToken.id,
+        req.decodedToken.organization_id
+      );
+
+      return result;
     } catch (error) {
       return error;
     }

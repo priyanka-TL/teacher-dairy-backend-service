@@ -41,5 +41,12 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
+  // ClassTeacherMapping.associate = (models) => {
+  //   ClassTeacherMapping.belongsTo(models.Class, {
+  //     foreignKey: "class_id",
+  //     as: "class",
+  //   });
+  // };
+
   return ClassTeacherMapping;
 };
