@@ -54,11 +54,11 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("students", ["user_id"]);
+    await queryInterface.addIndex("students", ["student_id"]);
     await queryInterface.addIndex("students", ["class_id"]);
     await queryInterface.addIndex(
       "students",
-      ["user_id", "class_id", "organization_id"],
+      ["student_id", "class_id", "organization_id"],
       {
         unique: true,
         name: "unique_user_class",
