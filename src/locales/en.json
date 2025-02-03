@@ -23,5 +23,7 @@
   "CLASS_FETCHED_SUCCESSFULLY": "Class fetched successfully",
   "TEACHER_LIST_FETCHED_SUCCESSFULLY": "Teachers list fetched successfully.",
   "TEACHER_ALREADY_MAPPED_TO_CLASS": "Teacher already mapped to class",
-  "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY": "Teacher mapped to class successfully"
+  "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY": "Teacher mapped to class successfully",
+  "STUDENT_ALREADY_MAPPED_TO_CLASS": "Students already added to class",
+  "STUDENT_MAPPED_TO_CLASS_SUCCESSFULLY": "Student added to class successfully"
 }

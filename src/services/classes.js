@@ -9,6 +9,7 @@ const {
 const { Op } = require("sequelize");
 const responses = require("@helpers/responses");
 const ClassTeacherMappingQueries = require("@database/queries/class-teacher-mapping");
+const studentQueries = require("@database/queries/student");
 
 module.exports = class ClassesHelper {
   /**
@@ -190,6 +191,68 @@ module.exports = class ClassesHelper {
       return responses.successResponse({
         statusCode: httpStatusCode.created,
         message: "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY",
+        result: createdMapping,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  /**
+   * add a student to a class.
+   * @method
+   * @name addStudent
+   * @param {String} classId - ID of the class.
+   * @param {String} studentId - ID of the student.
+   * @param {String} userId - ID of the user performing the action.
+   * @param {String} orgId - Organization ID.
+   * @returns {JSON} - Mapping response.
+   */
+  static async addStudent(classId, studentId, bodyData, userId, orgId) {
+    try {
+      // Check if class exists in the organization
+      const classDetail = await classesQueries.findOne({
+        id: classId,
+        organization_id: orgId,
+      });
+
+      if (!classDetail?.id) {
+        return responses.failureResponse({
+          message: "CLASS_NOT_FOUND",
+          statusCode: httpStatusCode.bad_request,
+          responseCode: "CLIENT_ERROR",
+        });
+      }
+
+      // Check if the student is already mapped to the class
+      const existingMapping = await studentQueries.findOne({
+        class_id: classId,
+        student_id: studentId,
+        organization_id: orgId,
+      });
+
+      if (existingMapping?.id) {
+        return responses.failureResponse({
+          message: "STUDENT_ALREADY_MAPPED_TO_CLASS",
+          statusCode: httpStatusCode.bad_request,
+          responseCode: "CLIENT_ERROR",
+        });
+      }
+
+      // Create the mapping
+      const mappingData = {
+        ...bodyData,
+        class_id: classId,
+        student_id: studentId,
+        organization_id: orgId,
+        created_by: userId,
+      };
+
+      const createdMapping = await studentQueries.create(mappingData);
+
+      return responses.successResponse({
+        statusCode: httpStatusCode.created,
+        message: "STUDENT_MAPPED_TO_CLASS_SUCCESSFULLY",
         result: createdMapping,
       });
     } catch (error) {

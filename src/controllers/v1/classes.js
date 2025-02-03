@@ -90,4 +90,30 @@ module.exports = class Classes {
       return error;
     }
   }
+
+  /**
+   * Map a student to a class
+   * @method
+   * @name mapStudent
+   * @param {Object} req - The request object.
+   * @param {String} req.params.id -  The ID of the class
+   * @param {String} req.query.student_id - The ID of the student to map.
+   * @returns {JSON} - Response indicating success or failure.
+   */
+
+  async addStudent(req) {
+    try {
+      const result = await classesService.addStudent(
+        req.params.id,
+        req.query.student_id,
+        req.body,
+        req.decodedToken.id,
+        req.decodedToken.organization_id
+      );
+
+      return result;
+    } catch (error) {
+      return error;
+    }
+  }
 };
