@@ -48,7 +48,7 @@ module.exports = {
     await queryInterface.addIndex("student_class_mapping", ["student_id"]);
     await queryInterface.addIndex("student_class_mapping", ["class_id"]);
     await queryInterface.addIndex(
-      "student_class_mapping",
+      "students",
       ["student_id", "class_id", "organization_id"],
       {
         unique: true,
