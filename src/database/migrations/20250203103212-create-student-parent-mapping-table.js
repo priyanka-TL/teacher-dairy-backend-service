@@ -3,30 +3,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("students", {
+    await queryInterface.createTable("student_parent_mapping", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      student_id: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-      },
-      class_id: {
+      parent_id: {
         type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      roll_no: {
-        type: Sequelize.STRING(20),
         allowNull: false,
-        unique: true,
       },
-      dob: {
-        type: Sequelize.DATE,
-        allowNull: true,
+      student_id: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      relationship: {
+        type: Sequelize.ENUM("Father", "Mother", "Guardian"),
+        allowNull: false,
       },
       organization_id: {
         allowNull: false,
@@ -54,19 +48,18 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex("students", ["user_id"]);
-    await queryInterface.addIndex("students", ["class_id"]);
-    await queryInterface.addIndex(
-      "students",
-      ["user_id", "class_id", "organization_id"],
-      {
-        unique: true,
-        name: "unique_user_class",
-      }
-    );
+    await queryInterface.addIndex("student_parent_mapping", ["student_id"]);
+    await queryInterface.addIndex("student_parent_mapping", ["parent_id"]);
+
+    // Adding the unique constraint for preventing duplicate mappings
+    await queryInterface.addConstraint("student_parent_mapping", {
+      fields: ["student_id", "parent_id"],
+      type: "unique",
+      name: "unique_student_parent_mapping",
+    });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("students");
+    await queryInterface.dropTable("student_parent_mapping");
   },
 };

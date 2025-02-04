@@ -1,7 +1,7 @@
 // Dependencies
 const httpStatusCode = require("@generics/http-status");
 const common = require("@constants/common");
-const ClassTeacherMappingQueries = require("@database/queries/class-teacher-mapping");
+const StudentParentMappingQueries = require("@database/queries/studentParentMapping");
 const responses = require("@helpers/responses");
 const userRequests = require("@requests/user");
 const classesQueries = require("@database/queries/classes");
@@ -94,63 +94,61 @@ module.exports = class StudentsHelper {
   }
 
   /**
-   * Map a teacher to a class.
+   * Map a student to a parent.
    * @method
-   * @name mapTeacherToClass
-   * @param {Object} bodyData - Mapping data.
-   * @param {String} userId - ID of the user performing the action.
-   * @param {String} orgId - Organization ID.
-   * @returns {JSON} - Mapping response.
+   * @name mapToParent
+   * @param {Object} req - The request object.
+   * @param {String} req.query.student_id - The ID of the student to map.
+   * @param {String} req.query.parent_id - The ID of the parent to map.
+   * @param {String} req.decodedToken.id - The ID of the user performing the action.
+   * @param {String} req.decodedToken.organization_id - The ID of the organization.
+   * @returns {JSON} - Response indicating success or failure.
    */
-  static async mapTeacherToClass(teacherId, classId, userId, orgId) {
+  static async mapToParent(
+    studentId,
+    parentId,
+    relationShip,
+    userId,
+    organizationId
+  ) {
     try {
-      const classDetail = await classesQueries.findOne({
-        id: classId,
-        organization_id: orgId,
-      });
-
-      if (!classDetail?.id) {
-        return responses.failureResponse({
-          message: "CLASS_NOT_FOUND",
-          statusCode: httpStatusCode.bad_request,
-          responseCode: "CLIENT_ERROR",
-        });
-      }
-
       // Check if the mapping already exists
-      const existingMapping = await ClassTeacherMappingQueries.findOne({
-        class_id: classId,
-        teacher_id: teacherId,
-        organization_id: orgId,
+      const existingMapping = await StudentParentMappingQueries.findOne({
+        student_id: studentId,
+        parent_id: parentId,
+        organization_id: organizationId,
       });
+
+      console.log(existingMapping, "existingMapping");
 
       if (existingMapping?.id) {
         return responses.failureResponse({
-          message: "TEACHER_ALREADY_MAPPED_TO_CLASS",
+          message: "STUDENT_ALREADY_MAPPED_TO_PARENT",
           statusCode: httpStatusCode.bad_request,
           responseCode: "CLIENT_ERROR",
         });
       }
 
-      // Create the mapping
+      // Create the student-parent mapping
       const mappingData = {
-        class_id: classId,
-        teacher_id: teacherId,
-        organization_id: orgId,
+        student_id: studentId,
+        parent_id: parentId,
+        relationship: relationShip || "Guardian",
+        organization_id: organizationId,
         created_by: userId,
       };
 
-      const createdMapping = await ClassTeacherMappingQueries.create(
+      const createdMapping = await StudentParentMappingQueries.create(
         mappingData
       );
 
       return responses.successResponse({
         statusCode: httpStatusCode.created,
-        message: "TEACHER_MAPPED_TO_CLASS_SUCCESSFULLY",
+        message: "STUDENT_MAPPED_TO_PARENT_SUCCESSFULLY",
         result: createdMapping,
       });
     } catch (error) {
-      throw error;
+      return error;
     }
   }
 };

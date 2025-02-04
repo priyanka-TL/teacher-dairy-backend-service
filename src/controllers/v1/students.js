@@ -25,4 +25,30 @@ module.exports = class Students {
       return error;
     }
   }
+
+  /**
+   * Map a student to a parent
+   * @method
+   * @name mapToParent
+   * @param {Object} req - The request object.
+   * @param {String} req.params.id -  The ID of the class
+   * @param {String} req.query.parent_id - The ID of the parent to map.
+   * @returns {JSON} - Response indicating success or failure.
+   */
+
+  async mapToParent(req) {
+    try {
+      const result = await studentsService.mapToParent(
+        req.params.id,
+        req.query.parent_id,
+        req.query.relation_ship,
+        req.decodedToken.id,
+        req.decodedToken.organization_id
+      );
+
+      return result;
+    } catch (error) {
+      return error;
+    }
+  }
 };

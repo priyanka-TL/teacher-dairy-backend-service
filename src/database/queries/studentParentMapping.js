@@ -1,9 +1,9 @@
-const Student = require("../models/index").Student;
+const StudentParentMapping = require("../models/index").StudentParentMapping;
 
-module.exports = class StudentData {
+module.exports = class StudentParentMappingData {
   static async create(data) {
     try {
-      return await Student.create(data, { returning: true });
+      return await StudentParentMapping.create(data, { returning: true });
     } catch (error) {
       throw error;
     }
@@ -11,7 +11,7 @@ module.exports = class StudentData {
 
   static async findOne(filter, attributes, options) {
     try {
-      return await Student.findOne({
+      return await StudentParentMapping.findOne({
         where: filter,
         attributes,
         options,
@@ -23,7 +23,7 @@ module.exports = class StudentData {
 
   static async findAll(filter, attributes, options) {
     try {
-      return await Student.findAll({
+      return await StudentParentMapping.findAll({
         where: filter,
         attributes,
         options,
@@ -36,7 +36,7 @@ module.exports = class StudentData {
 
   static async findAndCountAll(filter, attributes, options) {
     try {
-      return await Student.findAndCountAll({
+      return await StudentParentMapping.findAndCountAll({
         where: filter,
         attributes,
         options,
@@ -48,7 +48,7 @@ module.exports = class StudentData {
 
   static async update(filter, updatedata) {
     try {
-      const res = await Student.update(updatedata, {
+      const res = await StudentParentMapping.update(updatedata, {
         where: filter,
         returning: true,
         raw: true,

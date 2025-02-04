@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  const Student = sequelize.define(
-    "Student",
+  const StudentParentMapping = sequelize.define(
+    "StudentParentMapping",
     {
       id: {
         allowNull: false,
@@ -13,25 +13,18 @@ module.exports = (sequelize, DataTypes) => {
       student_id: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      class_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      roll_no: {
-        type: DataTypes.STRING(20),
+      parent_id: {
+        type: DataTypes.STRING,
         allowNull: false,
-        unique: true,
       },
-      dob: {
-        type: DataTypes.DATE,
-        allowNull: true,
+      relationship: {
+        type: DataTypes.ENUM("Father", "Mother", "Guardian"),
+        allowNull: false,
       },
       organization_id: {
         type: DataTypes.STRING,
         allowNull: false,
-        primaryKey: true,
       },
       created_by: {
         type: DataTypes.INTEGER,
@@ -44,12 +37,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "Student",
-      tableName: "students",
+      modelName: "StudentParentMapping",
+      tableName: "student_parent_mapping",
       freezeTableName: true,
       paranoid: true,
     }
   );
 
-  return Student;
+  return StudentParentMapping;
 };

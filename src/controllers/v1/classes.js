@@ -94,7 +94,7 @@ module.exports = class Classes {
   /**
    * Map a student to a class
    * @method
-   * @name mapStudent
+   * @name addStudent
    * @param {Object} req - The request object.
    * @param {String} req.params.id -  The ID of the class
    * @param {String} req.query.student_id - The ID of the student to map.
