@@ -2,6 +2,7 @@
 const httpStatusCode = require("@generics/http-status");
 const common = require("@constants/common");
 const classesQueries = require("@database/queries/classes");
+const userRequests = require('@requests/user')
 const {
   UniqueConstraintError,
   ForeignKeyConstraintError,
@@ -122,8 +123,27 @@ module.exports = class ClassesHelper {
         options
       );
 
+
       if (classes.count > 0) {
-        results.data = classes.rows;
+        const organization_ids = [...new Set([...classes?.rows?.map(classItem => classItem.organization_id)])] || [];
+        let org = []
+        if(organization_ids.length > 0) {
+          org = await userRequests.listOrganization(organization_ids)
+        }
+
+        const orgDetails = org.data.result.reduce((acc,organization) => {
+          acc[organization.id] = organization.name
+          return acc
+        },{})
+
+
+        results.data = classes?.rows?.map(classItem => ({
+          id : classItem.id,
+          name : classItem.name, 
+          // organization_id: classItem.organization_id, // Explicit key-value pair
+          organization: orgDetails?.[classItem.organization_id] || null, 
+        })) || [];
+        // results.data = classes?.rows
         results.count = classes.count;
       }
 
