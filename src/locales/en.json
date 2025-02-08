@@ -27,5 +27,8 @@
   "STUDENT_ALREADY_MAPPED_TO_CLASS": "Students already added to class",
   "STUDENT_MAPPED_TO_CLASS_SUCCESSFULLY": "Student added to class successfully",
   "STUDENT_ALREADY_MAPPED_TO_PARENT": "Student already mapped to parent",
-  "STUDENT_MAPPED_TO_PARENT_SUCCESSFULLY": "Student mapped to parent successfully"
+  "STUDENT_MAPPED_TO_PARENT_SUCCESSFULLY": "Student mapped to parent successfully",
+  "STUDENT_LIST_FETCHED_SUCCESSFULLY": "Student list fetched successfully.",
+  "STUDENT_DETAILS_FETCHED_SUCCESSFULLY": "Student details fetched successfully",
+  "STUDENT_NOT_FOUND": "Student not found"
 }

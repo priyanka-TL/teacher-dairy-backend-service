@@ -1,9 +1,10 @@
-const StudentClassMapping = require("../models/index").StudentClassMapping;
+const Comment = require("../models/index").Comment;
+const { Op } = require("sequelize");
 
-module.exports = class StudentData {
+module.exports = class CommentData {
   static async create(data) {
     try {
-      return await StudentClassMapping.create(data, { returning: true });
+      return await Comment.create(data, { returning: true });
     } catch (error) {
       throw error;
     }
@@ -11,10 +12,11 @@ module.exports = class StudentData {
 
   static async findOne(filter, attributes, options) {
     try {
-      return await StudentClassMapping.findOne({
+      return await Comment.findOne({
         where: filter,
         attributes,
         options,
+        raw: true,
       });
     } catch (error) {
       throw error;
@@ -23,23 +25,24 @@ module.exports = class StudentData {
 
   static async findAll(filter, attributes, options) {
     try {
-      return await StudentClassMapping.findAll({
+      return await Comment.findAll({
         where: filter,
         attributes,
         options,
         raw: true,
       });
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 
   static async findAndCountAll(filter, attributes, options) {
     try {
-      return await StudentClassMapping.findAndCountAll({
+      return await Comment.findAndCountAll({
         where: filter,
         attributes,
         options,
+        raw: true,
       });
     } catch (error) {
       throw error;
@@ -48,7 +51,7 @@ module.exports = class StudentData {
 
   static async update(filter, updatedata) {
     try {
-      const res = await StudentClassMapping.update(updatedata, {
+      const res = await Comment.update(updatedata, {
         where: filter,
         returning: true,
         raw: true,

@@ -2,10 +2,13 @@
 const httpStatusCode = require("@generics/http-status");
 const common = require("@constants/common");
 const StudentParentMappingQueries = require("@database/queries/studentParentMapping");
+const StudentClassMappingQueries = require("@database/queries/studentClassMapping");
 const responses = require("@helpers/responses");
 const userRequests = require("@requests/user");
+const { Op } = require("sequelize");
 const classesQueries = require("@database/queries/classes");
-
+const ClassTeacherMappingQueries = require("@database/queries/class-teacher-mapping");
+const _ = require("lodash");
 module.exports = class StudentsHelper {
   /**
    * list class.
@@ -22,18 +25,19 @@ module.exports = class StudentsHelper {
         count: 0,
       };
 
+      // Fetch all students
       let students = await userRequests.list(
         common.STUDENT_ROLE,
         pageNo,
         limit,
-        "",
+        search,
         organization_id
       );
 
       if (!students.success) {
         return responses.successResponse({
           statusCode: httpStatusCode.ok,
-          message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
+          message: "STUDENT_LIST_FETCHED_SUCCESSFULLY",
           result,
         });
       }
@@ -45,44 +49,89 @@ module.exports = class StudentsHelper {
       ) {
         return responses.successResponse({
           statusCode: httpStatusCode.ok,
-          message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
-          result: {
-            data: [],
-            count: 0,
-          },
+          message: "STUDENT_LIST_FETCHED_SUCCESSFULLY",
+          result,
         });
       }
 
-      let userList = [];
+      let userList = students.data.result.data;
 
-      // If classId is provided, filter teachers mapped to that class
+      // If classId is provided, filter only students mapped to that class
       if (classId) {
-        // Fetch the list of teachers already mapped to the class
-        const mappedTeachers = await ClassTeacherMappingQueries.findAll(
+        let classMappings = await StudentClassMappingQueries.findOne(
           {
-            class_id: parseInt(classId),
+            class_id: classId,
             organization_id: organization_id,
           },
-          { attributes: ["teacher_id"] }
+          { attributes: ["student_id"] }
         );
 
-        // Extract teacher IDs from the mapping
-        const mappedTeacherIds = mappedTeachers.map((mapping) =>
-          mapping.teacher_id.toString()
-        );
+        // If no students are mapped to this class, return an empty list
+        if (!classMappings) {
+          return responses.successResponse({
+            statusCode: httpStatusCode.ok,
+            message: "STUDENT_LIST_FETCHED_SUCCESSFULLY",
+            result,
+          });
+        }
 
-        // Filter the teachers list to exclude already mapped teachers
-        userList = teachers.data.result.data.filter(
-          (teacher) => !mappedTeacherIds.includes(teacher.id.toString())
+        // Filter only students mapped to the provided classId
+        userList = userList.filter(
+          (student) =>
+            student.id.toString() === classMappings.student_id.toString()
         );
-      } else {
-        // If no classId is provided, return all teachers
-        userList = teachers.data.result.data;
       }
+
+      // Fetch class mappings only for the filtered students
+      let studentIds = userList.map((student) => student.id.toString());
+      let studentClassMap = {};
+
+      if (studentIds.length > 0) {
+        let classMappings = await StudentClassMappingQueries.findAll(
+          {
+            student_id: { [Op.in]: studentIds },
+            organization_id: organization_id,
+          },
+          { attributes: ["student_id", "class_id"] }
+        );
+
+        // Fetch class details for mapped class IDs
+        const classIds = [...new Set(classMappings.map((c) => c.class_id))];
+        let classDetails = [];
+
+        if (classIds.length > 0) {
+          classDetails =
+            (await classesQueries.findAll(
+              {
+                id: { [Op.in]: classIds },
+                organization_id: organization_id,
+              },
+              { attributes: ["id", "name"] }
+            )) || [];
+        }
+
+        // Create a map of class details
+        const classMap = classDetails.reduce((map, cls) => {
+          map[cls.id] = { id: cls.id, name: cls.name };
+          return map;
+        }, {});
+
+        // Map each student to a single class object
+        studentClassMap = classMappings.reduce((map, mapping) => {
+          map[mapping.student_id] = classMap[mapping.class_id] || null;
+          return map;
+        }, {});
+      }
+
+      // Assign class object to each student
+      userList = userList.map((student) => ({
+        ...student,
+        class: studentClassMap[student.id.toString()] || {},
+      }));
 
       return responses.successResponse({
         statusCode: httpStatusCode.ok,
-        message: "TEACHER_LIST_FETCHED_SUCCESSFULLY",
+        message: "STUDENT_LIST_FETCHED_SUCCESSFULLY",
         result: {
           data: userList,
           count: userList.length,
@@ -92,7 +141,6 @@ module.exports = class StudentsHelper {
       throw error;
     }
   }
-
   /**
    * Map a student to a parent.
    * @method
@@ -119,8 +167,6 @@ module.exports = class StudentsHelper {
         organization_id: organizationId,
       });
 
-      console.log(existingMapping, "existingMapping");
-
       if (existingMapping?.id) {
         return responses.failureResponse({
           message: "STUDENT_ALREADY_MAPPED_TO_PARENT",
@@ -146,6 +192,138 @@ module.exports = class StudentsHelper {
         statusCode: httpStatusCode.created,
         message: "STUDENT_MAPPED_TO_PARENT_SUCCESSFULLY",
         result: createdMapping,
+      });
+    } catch (error) {
+      return error;
+    }
+  }
+
+  /**
+   * Fetch details of a specific student
+   * @method
+   * @name getStudentDetails
+   * @param {String} req.params.studentId - The ID of the student.
+   * @returns {JSON} - Response containing student details.
+   */
+
+  static async getStudentDetails(studentId, userToken) {
+    try {
+      // Fetch student details
+
+      let student;
+      let studentDetails = await userRequests.details(userToken, studentId);
+
+      if (!studentDetails.success) {
+        return responses.failureResponse({
+          statusCode: httpStatusCode.bad_request,
+          message: "STUDENT_NOT_FOUND",
+        });
+      }
+
+      if (studentDetails.data && studentDetails.data.result) {
+        student = studentDetails.data.result;
+      }
+
+      let organizationId = student?.organization_id?.toString();
+
+      // Fetch class mapping for the student
+      let classMapping = await StudentClassMappingQueries.findOne(
+        {
+          student_id: studentId.toString(),
+          organization_id: organizationId,
+        },
+        {
+          attributes: ["class_id"],
+        }
+      );
+
+      let classDetails = {};
+      let teacherDetails = [];
+      let parentDetails = {};
+
+      if (classMapping?.class_id) {
+        classDetails = await classesQueries.findOne(
+          {
+            id: classMapping.class_id,
+            organization_id: organizationId,
+          },
+          { attributes: ["id", "name"] }
+        );
+
+        if (classDetails?.id) {
+          let teacherClassMapping = await ClassTeacherMappingQueries.findAll(
+            {
+              class_id: classDetails?.id,
+              organization_id: organizationId,
+            },
+            { attributes: ["teacher_id"] }
+          );
+
+          const mappedTeacherIds = teacherClassMapping.map((mapping) =>
+            mapping.teacher_id.toString()
+          );
+
+          if (mappedTeacherIds.length > 0) {
+            let teachers = await userRequests.list(
+              common.TEACHER_ROLE,
+              null,
+              null,
+              "",
+              student.organization_id
+            );
+
+            if (teachers.success && teachers.data && teachers.data.result) {
+              teacherDetails = teachers.data.result.data.filter((teacher) =>
+                mappedTeacherIds.includes(teacher.id.toString())
+              );
+            }
+          }
+        }
+
+        // Fetch parent details
+        let parentMapping = await StudentParentMappingQueries.findOne(
+          {
+            student_id: studentId.toString(),
+            organization_id: organizationId,
+          },
+          {
+            attributes: ["parent_id", "relationship"],
+          }
+        );
+
+        if (parentMapping?.parent_id) {
+          let parentInfo = await userRequests.details(
+            userToken,
+            parentMapping.parent_id
+          );
+          if (parentInfo.success && parentInfo.data && parentInfo.data.result) {
+            parentDetails = {
+              ..._.pick(parentInfo.data.result, [
+                "id",
+                "name",
+                "phone",
+                "organization_id",
+              ]),
+              relationship: parentMapping.relationship,
+            };
+          }
+        }
+      }
+
+      return responses.successResponse({
+        statusCode: httpStatusCode.ok,
+        message: "STUDENT_DETAILS_FETCHED_SUCCESSFULLY",
+        result: {
+          ..._.pick(student, [
+            "id",
+            "name",
+            "preferred_language",
+            "organization",
+          ]),
+          class: _.pick(classDetails, ["id", "name"]) || null,
+          parent: parentDetails || null,
+          teachers: teacherDetails || [],
+        },
       });
     } catch (error) {
       return error;

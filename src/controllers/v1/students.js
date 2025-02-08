@@ -41,11 +41,29 @@ module.exports = class Students {
       const result = await studentsService.mapToParent(
         req.params.id,
         req.query.parent_id,
-        req.query.relation_ship,
+        req.query.relationship,
         req.decodedToken.id,
         req.decodedToken.organization_id
       );
 
+      return result;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  /**
+   * Student details
+   * @method
+   * @name details
+   * @param {Object} req - The request object.
+   * @param {String} req.params.id -  The ID of the student
+   * @returns {JSON} - Response indicating success or failure.
+   */
+
+  async details(req) {
+    try {
+      const result = await studentsService.getStudentDetails(req.params.id);
       return result;
     } catch (error) {
       return error;

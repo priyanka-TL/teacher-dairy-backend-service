@@ -1,8 +1,8 @@
 "use strict";
 
 module.exports = (sequelize, DataTypes) => {
-  const studentClassMapping = sequelize.define(
-    "studentClassMapping",
+  const StudentClassMapping = sequelize.define(
+    "StudentClassMapping",
     {
       id: {
         allowNull: false,
@@ -17,15 +17,6 @@ module.exports = (sequelize, DataTypes) => {
       },
       class_id: {
         type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      roll_no: {
-        type: DataTypes.STRING(20),
-        allowNull: false,
-        unique: true,
-      },
-      dob: {
-        type: DataTypes.DATE,
         allowNull: true,
       },
       organization_id: {
@@ -44,12 +35,12 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
-      modelName: "studentClassMapping",
+      modelName: "StudentClassMapping",
       tableName: "student_class_mapping",
       freezeTableName: true,
       paranoid: true,
     }
   );
 
-  return studentClassMapping;
+  return StudentClassMapping;
 };

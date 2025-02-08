@@ -15,7 +15,7 @@ module.exports = class ClassData {
       return await Class.findOne({
         where: filter,
         attributes,
-        options,
+        ...options,
         raw: true,
       });
     } catch (error) {
